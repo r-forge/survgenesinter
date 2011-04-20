@@ -1,0 +1,318 @@
+\documentclass{article}
+
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+% \VignetteIndexEntry{survGeneInterim Usage}
+
+\begin{document}
+
+<<foo,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+foo <- packageDescription("survGenesInterim")
+@
+
+\title{Vignette for Package \Sexpr{foo$Package} (Version \Sexpr{foo$Version})}
+\author{Andreas Leha <andreas.leha@med.uni-goettingen.de>}
+\maketitle
+
+\section{Overview}
+
+The identification of biomarkers that are correlated to therapy
+response is an important goal of medical research on severe diseases.
+For example, the gene expression levels of pretherapeutic tissue samples can be
+measured by means of microarrays and correlated to survival times.
+
+<<load>>=
+library(survGenesInterim)
+@ 
+
+The {\ttfamily survGenesInterim} package provides a simulation framework that
+allows to easily simulate such survival studies by providing functions
+for data generation and visualization, study simulation and result visualization.
+It provides the possibility to simulate just one trial as well as to
+do a full (parallelized) simulation of many trials, which is useful
+e.g. for sample size planning.
+
+\section{Data Generation}
+
+First, let us generate the data that shall be the basis for the
+simulation.  There are three parts:  The patient data, the expression
+level data and the trial data.
+
+\subsection{Patient Data}
+
+The $N$ patients are simulated to arrive uniformly distributed within
+$[0, l_1'$, where $l_1'$ denotes the anticipated length of the
+recruitment period.  The survival times are drawn from an exponential
+distribution with the mean survival time set to $\lambda$.  The
+function for the generation of the patient data is {\ttfamily generatePatientData}.
+
+<<patdatgeneration>>=
+N <- 50 # sample size: 50 patients
+l.1.tick <- 60 # [months]
+lambda <- 60 # [months]
+
+patdat <- generatePatientData(N, l.1.tick, lambda)
+@ 
+
+The return value is a list, that contains as main values the simulated
+arrival times and survival times.
+
+<<patdattimes>>=
+patdat$arrivalTimes
+patdat$survivalTimes
+@ 
+
+Furthermore it contains the numbers $N_1$ and $N_2$ that indicate how
+many patient had simulated survival times less then the given mean
+$\lambda$ and how many patients had simulated survival times greater
+to the given mean, respectively.
+
+<<patdatns>>=
+patdat$N.1
+patdat$N.2
+@ 
+
+\autoref{fig:patdat} show a visualization of this data produced with the function {\ttfamily plotpatdat}:
+
+<<plotpatdatcode,include=FALSE>>=
+plotpatdat(patdat)
+@
+
+\begin{figure}
+  \centering
+<<label=plotpatdat,fig=TRUE,echo=FALSE>>=
+<<plotpatdatcode>>
+@  
+  \caption{The visualized patient data.  The arrival time of a patient
+    is given as the left end the line and his death by the right end.
+    The dashed line marks the arrival of the last patient included in
+    the study and, thus, the end of the recruitment period.}
+  \label{fig:patdat}
+\end{figure}
+
+
+
+\subsection{Expression Level Data}
+
+In this package the effect of expression levels to survival times are
+modelled as a group effect, meaning that the available samples are
+split in two groups: the short survivors and the long survivors.
+Therefore, the effect is modelled as the fold change ($fc$) between the
+expression levels of these two groups.  The group sizes $N_1$ and $N_2$ of these two
+groups can be set freely (e.g. to equal sized groups).  The package
+offers an easy way to split the patients at the mean survival time
+that was used to generate the data.
+
+<<genedatns>>=
+N.1 <- patdat$N.1
+N.2 <- patdat$N.2
+@ 
+
+The expression level data are drawn from a multivariate normal
+distribution.  Thus, the paramters needed include next to the fold
+change $fc$ also the covariance matrices $\Sigma_1$ and $\Sigma_2$ to
+use in either group.  If no covariance $\Sigma_2$ is specified, the
+package uses $\Sigma_1$ for both groups.  In the example below we set
+the two covariance matrices explicitly, though we could also omit
+the setting of Sigma.2.  The data generation is done
+in the function {\ttfamily generateExpressionData}.
+
+<<gendatparams>>=
+d <- 100 # we simulate 100 genes
+fc <- c(rep(0,d/2), ceiling(rnorm(d/2, 0, 1)-0.5))
+Sigma.1 <- diag(100) # uncorrelated
+
+gendat <- generateExpressionData(fc=fc, Sigma.1=Sigma.1, Sigma.2=Sigma.1, N.1=N.1, N.2=N.2)
+@ 
+
+The return value is again a list.  The main items are the expression
+levels for both groups $\mathbb{X}_1$ and $\mathbb{X}_2$:
+
+<<gendatresults>>=
+head(gendat$X.1[,1:5])
+head(gendat$X.2[,1:5])
+@ 
+
+The fold changes can be easily visualized (see \autoref{fig:gendat})
+with the help of the function {\ttfamily plotgendat}:
+<<plotgendatcode,include=FALSE>>=
+plotgendat(gendat)
+@ 
+
+\begin{figure}
+  \centering
+<<label=plotgendat,fig=TRUE,echo=FALSE>>=
+<<plotgendatcode>>
+@  
+  \caption{The visualized fold change vector used to genereate the
+    expression level data.}
+  \label{fig:patdat}
+\end{figure}
+
+\subsection{Trial Data}
+
+The parameter that control the trial desing are the length of the
+follow-up preriod $l_2$ and the number of (interim) analyses to
+perform during the recruitment period ($M_1$) and during the follow-up
+period ($M.2$).
+
+<<trialparams>>=
+l.2 <- 60 # [months]
+M.1 <- 2
+M.2 <- 2
+@ 
+
+Finally there are the more tecnical parameters to set.  As the trial
+simulation internally uses the Cox-regression and performs one test
+per gene, there is need for a p-value adjustment.  The method can be
+chosen from {\ttfamily c("holm", "hochberg", "hommel", "bonferroni",
+  "BH", "BY", "fdr", "none")}.  Also the tolerable type I error level
+$\alpha$ is a paramter.
+
+<<errorparameters>>=
+adjustment <- "BH"
+alpha <- 0.05
+@ 
+
+The trial is aborted as soon as the estimated power rate exceeds a
+given threshold, which is the last parameter to set:
+
+<<powerparameter>>=
+powerThreshold <- 0.8
+@ 
+
+\section{Simulation of One Trial}
+
+Once all parameters are set and the data have been generated, the
+simulation of one trial is a simple function call:
+
+<<trialsim>>=
+oneTrial <- interimTrial(patdat, gendat, l.2, M.1, M.2, alpha, powerThreshold, adjustment)
+@ 
+
+The result is a list, which has as main part a resultTable, that shows
+(row by row) at which analysis the trial was stopped, the error rate (FDR),
+the power rate (APR), the estimated error rate (eFDR), and the
+estimated power rate (eAPR):
+
+<<trialsimresult>>=
+oneTrial$resultTable
+@ 
+
+The error rate at each analysis can also be barplotted as shown in
+\autoref{fig:errorplot} with
+<<trialsimerrorplot,include=FALSE>>=
+plotinterimFDR(oneTrial)
+@ 
+
+\begin{figure}
+  \centering
+<<label=ploterror,fig=TRUE,echo=FALSE>>=
+<<trialsimerrorplot>>
+@  
+  \caption{The visual presentation of the achieved error rates at each
+    analysis.}
+  \label{fig:errorplot}
+\end{figure}
+
+
+The package containes also a function, that plots the power rates.
+This function also includes the estimated power rates in the plot to
+make a comparison possible (see \autoref{fig:powerplot}):
+
+<<trialsimpower,include=FALSE>>=
+plotinterimAPR(oneTrial)
+@ 
+
+\begin{figure}
+  \centering
+<<label=plotpower,fig=TRUE,echo=FALSE>>=
+<<trialsimpower>>
+@  
+  \caption{The visual presentation of the achieved power rates and
+    their estimations at each analysis.}
+  \label{fig:powerplot}
+\end{figure}
+
+
+\section{Simulation of more Trials}
+
+It is not hard to write a simulation loop that utilizes the above
+shown functions.  The package, however, includes such simluation
+function as well, which makes use of the cholesky decomposition of the
+covariance matrices to speed up the generation of expression level
+data and is even available in a parallel version using the {\ttfamily
+  multicore}.
+
+For the use of the simulation function shipped with this package, two
+more parameters can be set: The number of trials to simulate and
+whether to use the parallel version.
+
+<<moresimparams>>=
+numSimRuns <- 2 # for the sake of time neede to build this vignette only 2
+useMulticore <- FALSE # just in case 'multicore' is not available
+@ 
+
+The simulation is invoked by this function call:
+
+<<moretrials>>=
+moreTrials <- interimTrialSimulation(fc, Sigma.1, NULL,
+                                     N, l.1.tick, l.2, lambda,
+                                     M.1, M.2, alpha, powerThreshold, adjustment,
+                                     numSimRuns, useMulticore)
+@ 
+
+The result is structured in the same way as in the case of only one
+trial being simulated.  The only difference is, that {\ttfamily
+  resultTable} now contains average values.
+
+The same plot functions are available as well.  There is one more plot
+function ({\ttfamily plotinterimStops}) that is interesting in this
+case of more trials having been conducted.  This function shows how
+many of the simulated trials were stopped at each analysis.
+\autoref{fig:plotstops} show the plot generated by:
+
+<<trialsimstops,include=FALSE>>=
+plotinterimStops(moreTrials)
+@ 
+
+\begin{figure}
+  \centering
+<<label=plotstops,fig=TRUE,echo=FALSE>>=
+<<trialsimstops>>
+@  
+  \caption{The visual presentation of the fraction of simulated trial
+    stopped at the analyses.}
+  \label{fig:powerplot}
+\end{figure}
+
+
+%%\begin{thebibliography}{}
+%%
+%%\bibitem[Gelman et al.(1996)Gelman, Roberts, and Gilks]{grg}
+%%Gelman, A., G.~O. Roberts, and W.~R. Gilks (1996).
+%%\newblock Efficient Metropolis jumping rules.
+%%\newblock In \emph{Bayesian Statistics, 5 (Alicante, 1994)}, pp.~599--607.
+%%  Oxford University Press.
+%%
+%%\bibitem[Geyer(1992)]{practical}
+%%Geyer, C.~J. (1992).
+%%\newblock Practical Markov chain Monte Carlo (with discussion).
+%%\newblock \emph{Statistical Science}, 7, 473--511.
+%%
+%%\bibitem[Geyer and Thompson(1995)]{geyer-temp}
+%%Geyer, C.~J. and E.~A. Thompson (1995).
+%%\newblock Annealing Markov chain Monte Carlo with applications to
+%%    ancestral inference.
+%%\newblock \emph{Journal of the American Statistical Association}, 90, 909--920.
+%%
+%%\end{thebibliography}
+
+\end{document}
