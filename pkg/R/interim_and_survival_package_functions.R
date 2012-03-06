@@ -55,10 +55,10 @@
 ##' 
 ##' numSimRuns <- 2
 ##' 
-##' result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
-##'                                  N, l.1.tick, l.2, lambda,
-##'                                  M.1, M.2, alpha, powerThreshold, adjustment,
-##'                                  numSimRuns)
+##' \dontrun{result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
+##'                                           N, l.1.tick, l.2, lambda,
+##'                                           M.1, M.2, alpha, powerThreshold, adjustment,
+##'                                           numSimRuns)}
 NA
 
 
@@ -91,7 +91,7 @@ NA
 ##' ## the mean survival time
 ##' lambda <- 60
 ##' 
-##' P <- generatePatientData(N, l.1.tick, lambda)
+##' \dontrun{P <- generatePatientData(N, l.1.tick, lambda)}
 generatePatientData <- function(N, l.1.tick, lambda)
 {
   if(!is.numeric(N))
@@ -177,7 +177,7 @@ generatePatientData <- function(N, l.1.tick, lambda)
 ##' N.1 <- 30
 ##' N.2 <- 30
 ##' 
-##' G <- generateExpressionData(fc, Sigma.1, Sigma.2, N.1, N.2)
+##' \dontrun{G <- generateExpressionData(fc, Sigma.1, Sigma.2, N.1, N.2)}
 generateExpressionData <- function(fc=rep(0,100),
                    Sigma.1=diag(100),
                    Sigma.2=NULL,
@@ -284,7 +284,7 @@ generateExpressionData <- function(fc=rep(0,100),
 ##' p_values_adjusted <- p.adjust(p_values, method="BH")
 ##' 
 ##' ## estimate the power
-##' estimateAPR(alpha=0.05, p_values=p_values, p_values_adjusted=p_values_adjusted)
+##' \dontrun{estimateAPR(alpha=0.05, p_values=p_values, p_values_adjusted=p_values_adjusted)}
 estimateAPR <- function(alpha, p_values, p_values_adjusted, lambda=0.5)
 {
   if(!is.numeric(alpha))
@@ -370,7 +370,7 @@ estimateAPR <- function(alpha, p_values, p_values_adjusted, lambda=0.5)
 ##' p_values_adjusted <- p.adjust(p_values, method="BH")
 ##' 
 ##' ## estimate the FDR
-##' estimateFDR(alpha=0.05, p_values=p_values, p_values_adjusted=p_values_adjusted)
+##' \dontrun{estimateFDR(alpha=0.05, p_values=p_values, p_values_adjusted=p_values_adjusted)}
 estimateFDR <- function(alpha, p_values, p_values_adjusted, lambda=0.5)
 {
   if(!is.numeric(alpha))
@@ -508,7 +508,7 @@ estimateFDR <- function(alpha, p_values, p_values_adjusted, lambda=0.5)
 ##' powerThreshold <- 0.8
 ##' adjustment <- "BH"
 ##' 
-##' T <- interimTrial(patdat, gendat, l.2, M.1, M.2, alpha, powerThreshold, adjustment)
+##' \dontrun{T <- interimTrial(patdat, gendat, l.2, M.1, M.2, alpha, powerThreshold, adjustment)}
 interimTrial <- function(patdat,
                          gendat,
                          l.2,
@@ -818,11 +818,11 @@ interimTrial <- function(patdat,
 ##' ## the number of studies to simulate
 ##' numSimRuns <- 2
 ##' 
-##' result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
-##'                                  N, l.1.tick, l.2, lambda,
-##'                                  M.1, M.2, alpha, powerThreshold, adjustment,
-##'                                  numSimRuns, parallel=FALSE)
-##' result$resultTable
+##' \dontrun{result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
+##'                                           N, l.1.tick, l.2, lambda,
+##'                                           M.1, M.2, alpha, powerThreshold, adjustment,
+##'                                           numSimRuns, parallel=FALSE)}
+##' \dontrun{result$resultTable}
 interimTrialSimulation <- function(fc, Sigma.1, Sigma.2,
                                    N, l.1.tick, l.2, lambda,
                                    M.1, M.2, alpha, powerThreshold, adjustment,
@@ -1181,12 +1181,12 @@ plotpatdat <- function(patdat)
 ##' 
 ##' numSimRuns <- 2
 ##' 
-##' result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
-##'                                  N, l.1.tick, l.2, lambda,
-##'                                  M.1, M.2, alpha, powerThreshold, adjustment,
-##'                                  numSimRuns, parallel=FALSE)
+##' \dontrun{result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
+##'                                           N, l.1.tick, l.2, lambda,
+##'                                           M.1, M.2, alpha, powerThreshold, adjustment,
+##'                                           numSimRuns, parallel=FALSE)}
 ##' 
-##' plotinterimFDR(result)
+##' \dontrun{plotinterimFDR(result)}
 plotinterimFDR <- function(interimdat)
 {
   if(!is.list(interimdat))
@@ -1252,12 +1252,12 @@ plotinterimFDR <- function(interimdat)
 ##' 
 ##' numSimRuns <- 2
 ##' 
-##' result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
-##'                                  N, l.1.tick, l.2, lambda,
-##'                                  M.1, M.2, alpha, powerThreshold, adjustment,
-##'                                  numSimRuns, parallel=FALSE)
+##' \dontrun{result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
+##'                                           N, l.1.tick, l.2, lambda,
+##'                                           M.1, M.2, alpha, powerThreshold, adjustment,
+##'                                           numSimRuns, parallel=FALSE)}
 ##' 
-##' plotinterimAPR(result)
+##' \dontrun{plotinterimAPR(result)}
 plotinterimAPR <- function(interimdat)
 {
   if(!is.list(interimdat))
@@ -1347,12 +1347,12 @@ plotinterimAPR <- function(interimdat)
 ##' 
 ##' numSimRuns <- 2
 ##' 
-##' result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
-##'                                  N, l.1.tick, l.2, lambda,
-##'                                  M.1, M.2, alpha, powerThreshold, adjustment,
-##'                                  numSimRuns, parallel=FALSE)
+##' \dontrun{result <- interimTrialSimulation(fc, Sigma.1, Sigma.2,
+##'                                           N, l.1.tick, l.2, lambda,
+##'                                           M.1, M.2, alpha, powerThreshold, adjustment,
+##'                                           numSimRuns, parallel=FALSE)}
 ##' 
-##' plotinterimStops(result)
+##' \dontrun{plotinterimStops(result)}
 plotinterimStops <- function(interimdat)
 {
   if(!is.list(interimdat))

@@ -5,15 +5,19 @@ Version: 1.0
 Date: 2010-07-21
 Author: Andreas Leha, Klaus Jung, Tim Beissbarth
 Maintainer: Andreas Leha <andreas.leha@med.uni-goettingen.de>
-Depends: mvtnorm, survival, foreach
-Suggests: doMC
-Description: The main part of this package is the simulation of a
-    survival study based on simulated gene expression level data and
-    simulated patient data. Functions to generate such gene expression
-    level data and patient data are included as well.  Resulting error
-    rate (FDR) and power rate can be visualized.  Thus, this package
-    can be used for sample size or power estimations in the planning of
-    a study.
+Depends:
+    mvtnorm,
+    survival,
+    foreach
+Suggests:
+    doMC
+Description: The main part of this package is the simulation of a survival study
+    based on simulated gene expression level data and simulated patient data.
+    Functions to generate such gene expression level data and patient data are
+    included as well.  Resulting error rate (FDR) and power rate can be
+    visualized.  Thus, this package can be used for sample size or power
+    estimations in the planning of a study.
 License: GPL2
 LazyLoad: yes
-Collate: 'interim_and_survival_package_functions.R'
+Collate:
+    'interim_and_survival_package_functions.R'
