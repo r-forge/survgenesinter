@@ -43,7 +43,18 @@ echo $contents; } ?>
 
 <!-- end of project description -->
 
-<p> No content added. </p>
+<p>
+This package provides methods described in:<br>
+<strong>Andreas Leha, Tim Beißbarth, and Klaus Jung</strong><br>
+    Sequential Interim Analyses of Survival Data in DNA
+    Microarray Experiments,<br>
+    BMC Bioinformatics, 2011<br>
+    <a href="http://www.biomedcentral.com/1471-2105/12/127">www.biomedcentral.com/1471-2105/12/127</a>   [ <a href="leha2011.tex">bib</a> ]
+ </p>
+
+<p> Install with<br>
+install.packages("survGenesInterim", repos="http://R-Forge.R-project.org")
+</p>
 
 <p> The <strong>project summary page</strong> you can find <a href="http://<?php echo $domain; ?>/projects/<?php echo $group_name; ?>/"><strong>here</strong></a>. </p>
 
